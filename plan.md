@@ -144,3 +144,44 @@ Notes
 
 
 Any additional notes that you think are relevant to the plan. For example, do we need to perform any changes to the AWS architecture to support the new feature? Briefly describe the changes you would need to make.
+
+#What Could Be Improved:
+
+- Error Handling - The update() service doesn't verify the user owns the article before updating. Frontend checks this, but backend should too.
+
+- Slug Collision - The slug generation could theoretically collide. Consider adding a retry mechanism.
+
+- Validation - DTOs could have validation decorators (@IsNotEmpty, @MinLength, etc.)
+
+- Image Support - No featured image field (common in article apps)
+
+- Draft Status - No draft/published status field
+
+- comment added article are crashing
+
+- CsS can be inmroved
+
+
+ESSENTIAL (Must-Have for Blog App) 
+  Autosave Drafts — Users hate losing work. Essential for long-form content.
+  Markdown Preview — Bloggers need to see how their post looks before publishing.
+  Error Handling + Validation — Prevent bad data and show user-friendly error messages.
+  Reliable Database (Multi-AZ Aurora) — Blog data is critical; you can't afford downtime or data loss.
+  HTTPS/TLS Security — Mandatory for any public web app.
+  Input Validation (backend DTOs) — Prevent injection attacks and malformed data.
+
+HIGHLY RECOMMENDED (Strong Value-Add) 
+  Toast Notifications — Users need feedback when articles save/fail.
+  Skeleton Loaders — Improves perceived performance; makes app feel snappy.
+  Caching (Redis) — Blog feeds are heavily read; cache hot queries to reduce DB load.
+  Image Upload to S3 — Blogs almost always need featured images or inline images.
+  SEO Optimization — Blog articles need proper meta tags, SSR/SSG for discoverability.
+  Audit Trail / Edit History — Show readers "last updated" date; track who edited what.
+  
+NICE-TO-HAVE (Polish & Scale) 
+  Tag Suggestions/Autocomplete — Better UX for categorizing posts.
+  CI/CD Pipeline — Automates deployments; essential for team but not for MVP.
+  Centralized Logging (CloudWatch/X-Ray) — Useful when debugging production issues.
+  RDS Proxy — Needed only if you're running 50+ concurrent backend instances.
+  Blue/Green Deployments — Zero-downtime deploys; nice but not critical for small blogs.
+  WAF + Rate Limiting — Important if you expect spam/attacks; otherwise optional.
