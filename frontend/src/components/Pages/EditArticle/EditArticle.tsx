@@ -67,7 +67,11 @@ function onSubmit(slug: string, lockInterval: React.MutableRefObject<number | nu
     const result = await updateArticle(slug, store.getState().editor.article);
 
     result.match({
-      err: (errors) => store.dispatch(updateErrors(errors)),
+      err: (errors) => {
+        if (lockInterval.current) window.clearInterval(lockInterval.current);
+        releaseLock(slug);
+        store.dispatch(updateErrors(errors));
+      },
       ok: ({ slug }) => {
         if (lockInterval.current) window.clearInterval(lockInterval.current);
         releaseLock(slug);
