@@ -14,9 +14,10 @@ export function ArticleEditor({ onSubmit }: { onSubmit: (ev: React.FormEvent) =>
       <ContainerPage>
         <div className='col-md-10 offset-md-1 col-xs-12'>
           <CoAuthorSelector
-            selected={article.coAuthorUsernames}
+            selectedUsernames={article.coAuthorUsernames ?? []}
+            selectedIdsCsv={article.coAuthorIdsCsv ?? ''}
             disabled={submitting}
-            onChange={(usernames) => store.dispatch(setCoAuthors(usernames))}
+            onChange={(usernames, idsCsv) => store.dispatch(setCoAuthors({ usernames, idsCsv }))}
           />
 
           <GenericForm

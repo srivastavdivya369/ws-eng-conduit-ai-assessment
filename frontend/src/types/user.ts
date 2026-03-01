@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Decoder, nullable, object, string } from 'decoders';
-import { loadUser } from '../components/App/App.slice';
+import { loadUser, logout as logoutAction } from '../components/App/App.slice';
 import { store } from '../state/store';
 
 export interface PublicUser {
@@ -37,4 +37,10 @@ export function loadUserIntoApp(user: User) {
   localStorage.setItem('token', user.token);
   axios.defaults.headers.Authorization = `Token ${user.token}`;
   store.dispatch(loadUser(user));
+}
+
+export function logoutFromApp() {
+  delete axios.defaults.headers.Authorization;
+  localStorage.removeItem('token');
+  store.dispatch(logoutAction());
 }

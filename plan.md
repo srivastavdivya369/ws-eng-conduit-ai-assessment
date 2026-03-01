@@ -2,7 +2,9 @@ Implementation Plan
 
 Requirement
 - Co‑authors
-  - Create Article page: add a new “Co-Authors” field.
+  - In Create Article page: add a new “Co-Authors” Field
+    - Co-Authors is a dropdown field which shows all existing users list and allow multiselect.
+    - using comma show all user email id and send user ids with comma seprated  save in db
   - Edit Article page: allow co-authors to edit the article.
 - Edit locking
   - When a user opens an article editor, the article is locked for editing.

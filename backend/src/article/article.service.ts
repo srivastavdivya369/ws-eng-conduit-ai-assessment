@@ -190,8 +190,24 @@ export class ArticleService {
     const article = new Article(user!, dto.title, dto.description, dto.body);
     article.tagList.push(...dto.tagList);
 
-    // resolve co-authors if provided
-    if (dto.coAuthorUsernames && dto.coAuthorUsernames.length > 0) {
+    // resolve co-authors: prefer idsCsv, fallback to usernames
+    if (dto.coAuthorIdsCsv && dto.coAuthorIdsCsv.trim()) {
+      const ids = dto.coAuthorIdsCsv
+        .split(',')
+        .map((s) => parseInt(s, 10))
+        .filter((n) => Number.isFinite(n));
+      if (ids.length > 0) {
+        const coAuthors = await this.userRepository.find({ id: { $in: ids } });
+        const foundIds = new Set(coAuthors.map((u) => u.id));
+        const missing = ids.filter((id) => !foundIds.has(id));
+        if (missing.length > 0) {
+          throw new BadRequestException({ errors: { coAuthors: missing.map((id) => `Unknown user id: ${id}`) } });
+        }
+        for (const u of coAuthors) {
+          article.coAuthors.add(u);
+        }
+      }
+    } else if (dto.coAuthorUsernames && dto.coAuthorUsernames.length > 0) {
       const coAuthors = await this.userRepository.find({ username: { $in: dto.coAuthorUsernames } });
       const foundUsernames = new Set(coAuthors.map((u) => u.username));
       const missing = dto.coAuthorUsernames.filter((u) => !foundUsernames.has(u));
@@ -202,7 +218,8 @@ export class ArticleService {
         article.coAuthors.add(u);
       }
     }
-    user?.articles.add(article);
+    // ensure the new article and its M:N relations are persisted
+    this.em.persist(article);
     await this.em.flush();
 
     return { article: article.toJSON(user!) };
@@ -243,8 +260,23 @@ export class ArticleService {
     if (typeof articleData.tagList !== 'undefined') assignable.tagList = articleData.tagList as unknown as string[];
     wrap(article).assign(assignable);
 
-    // update co-authors if provided
-    if (articleData.coAuthorUsernames) {
+    // update co-authors if provided (prefer idsCsv, fallback to usernames)
+    if (typeof articleData.coAuthorIdsCsv === 'string') {
+      const ids = articleData.coAuthorIdsCsv
+        .split(',')
+        .map((s) => parseInt(s, 10))
+        .filter((n) => Number.isFinite(n));
+      const coAuthors = await this.userRepository.find({ id: { $in: ids } });
+      const foundIds = new Set(coAuthors.map((u) => u.id));
+      const missing = ids.filter((id) => !foundIds.has(id));
+      if (missing.length > 0) {
+        throw new BadRequestException({ errors: { coAuthors: missing.map((id) => `Unknown user id: ${id}`) } });
+      }
+      article.coAuthors.removeAll();
+      for (const u of coAuthors) {
+        article.coAuthors.add(u);
+      }
+    } else if (articleData.coAuthorUsernames) {
       const coAuthors = await this.userRepository.find({ username: { $in: articleData.coAuthorUsernames } });
       const foundUsernames = new Set(coAuthors.map((u) => u.username));
       const missing = articleData.coAuthorUsernames.filter((u) => !foundUsernames.has(u));

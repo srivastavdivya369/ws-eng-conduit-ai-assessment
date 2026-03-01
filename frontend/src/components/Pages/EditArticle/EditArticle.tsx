@@ -37,9 +37,14 @@ async function _loadArticle(slug: string) {
       return;
     }
 
-    store.dispatch(loadArticle({ title, description, body, tagList, coAuthorUsernames: [] }));
+    store.dispatch(loadArticle({ title, description, body, tagList, coAuthorUsernames: [], coAuthorIdsCsv: '' }));
     if (coAuthors && coAuthors.length > 0) {
-      store.dispatch(setCoAuthors(coAuthors.map((p) => p.username)));
+      const usernames = coAuthors.map((p) => p.username);
+      const idsCsv = coAuthors
+        .map((p) => p.id)
+        .filter((n) => typeof n === 'number' && n > 0)
+        .join(',');
+      store.dispatch(setCoAuthors({ usernames, idsCsv }));
     }
   } catch {
     location.hash = '#/';

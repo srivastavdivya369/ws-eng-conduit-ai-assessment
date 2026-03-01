@@ -1,9 +1,8 @@
-import axios from 'axios';
 import React from 'react';
 import { updateSettings } from '../../../services/conduit';
 import { store } from '../../../state/store';
 import { useStore } from '../../../state/storeHooks';
-import { UserSettings } from '../../../types/user';
+import { UserSettings, logoutFromApp } from '../../../types/user';
 import { buildGenericFormField } from '../../../types/genericFormField';
 import { loadUser, logout } from '../../App/App.slice';
 import { GenericForm } from '../../GenericForm/GenericForm';
@@ -78,8 +77,6 @@ function onUpdateSettings(user: UserSettings) {
 }
 
 function _logout() {
-  delete axios.defaults.headers.Authorization;
-  localStorage.removeItem('token');
-  store.dispatch(logout());
+  logoutFromApp();
   location.hash = '/';
 }

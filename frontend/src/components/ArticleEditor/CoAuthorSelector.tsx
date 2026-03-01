@@ -3,37 +3,36 @@ import { Profile } from '../../types/profile';
 import { searchUsers } from '../../services/conduit';
 
 export function CoAuthorSelector({
-  selected,
+  selectedUsernames,
+  selectedIdsCsv,
   onChange,
   disabled,
 }: {
-  selected: string[];
-  onChange: (usernames: string[]) => void;
+  selectedUsernames: string[];
+  selectedIdsCsv?: string;
+  onChange: (usernames: string[], idsCsv: string) => void;
   disabled: boolean;
 }) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Profile[]>([]);
+  const [allUsers, setAllUsers] = useState<Profile[]>([]);
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
+  // load all users once, then filter client-side
   useEffect(() => {
     let ignore = false;
     (async () => {
-      if (!query.trim()) {
-        setResults([]);
-        return;
-      }
       try {
-        const { users } = await searchUsers(query, 10, 0);
-        if (!ignore) setResults(users);
+        const { users } = await searchUsers('', 1000, 0);
+        if (!ignore) setAllUsers(users);
       } catch {
-        if (!ignore) setResults([]);
+        if (!ignore) setAllUsers([]);
       }
     })();
     return () => {
       ignore = true;
     };
-  }, [query]);
+  }, []);
 
   useEffect(() => {
     function onDocClick(ev: MouseEvent) {
@@ -45,30 +44,58 @@ export function CoAuthorSelector({
     return () => document.removeEventListener('click', onDocClick);
   }, []);
 
+  const ids = useMemo<number[]>(() =>
+    (selectedIdsCsv || '')
+      .split(',')
+      .map((s) => parseInt(s, 10))
+      .filter((n) => Number.isFinite(n)),
+  [selectedIdsCsv]);
+
+  const userMap = useMemo(() => new Map(allUsers.map((u) => [u.username, u.id])), [allUsers]);
+
+  function toCsv(values: number[]) {
+    const uniq = Array.from(new Set(values));
+    return uniq.join(',');
+  }
+
   function add(username: string) {
     if (disabled) return;
-    if (!selected.includes(username)) {
-      onChange([...selected, username]);
+    const id = userMap.get(username);
+    const usernames = selectedUsernames;
+    let nextUsernames = usernames;
+    let nextIds = ids;
+    if (!usernames.includes(username)) {
+      nextUsernames = [...usernames, username];
     }
+    if (id && !ids.includes(id)) {
+      nextIds = [...ids, id];
+    }
+    onChange(nextUsernames, toCsv(nextIds));
     setQuery('');
     setOpen(false);
   }
 
   function remove(username: string) {
     if (disabled) return;
-    onChange(selected.filter((u) => u !== username));
+    const id = userMap.get(username);
+    const nextUsernames = selectedUsernames.filter((u) => u !== username);
+    const nextIds = id ? ids.filter((n) => n !== id) : ids;
+    onChange(nextUsernames, toCsv(nextIds));
   }
 
-  const filtered = useMemo(
-    () => results.filter((u) => !selected.includes(u.username)),
-    [results, selected],
-  );
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const filtered = q
+      ? allUsers.filter((u) => u.username.toLowerCase().includes(q) || (u.bio || '').toLowerCase().includes(q))
+      : allUsers;
+    return filtered.filter((u) => !selectedUsernames.includes(u.username));
+  }, [allUsers, query, selectedUsernames]);
 
   return (
     <div ref={containerRef} className="form-group" style={{ position: 'relative' }}>
       <label style={{ display: 'block', marginBottom: 6 }}>Co-authors</label>
       <div className="tag-list" style={{ marginBottom: 8 }}>
-        {selected.map((u) => (
+        {selectedUsernames.map((u) => (
           <span key={u} className="tag-default tag-pill" onClick={() => remove(u)}>
             <i className="ion-close-round"></i>
             {u}

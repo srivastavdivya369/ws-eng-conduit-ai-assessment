@@ -13,7 +13,7 @@ export interface EditorState {
 }
 
 const initialState: EditorState = {
-  article: { title: '', body: '', tagList: [], description: '', coAuthorUsernames: [] },
+  article: { title: '', body: '', tagList: [], description: '', coAuthorUsernames: [], coAuthorIdsCsv: '' },
   tag: '',
   coAuthor: '',
   submitting: false,
@@ -61,8 +61,9 @@ const slice = createSlice({
       }
     },
     addCoAuthor: (state) => {
-      if (state.coAuthor.length > 0 && !state.article.coAuthorUsernames.includes(state.coAuthor)) {
-        state.article.coAuthorUsernames.push(state.coAuthor);
+      const list = state.article.coAuthorUsernames ?? (state.article.coAuthorUsernames = []);
+      if (state.coAuthor.length > 0 && !list.includes(state.coAuthor)) {
+        list.push(state.coAuthor);
         state.coAuthor = '';
       }
     },
@@ -70,10 +71,11 @@ const slice = createSlice({
       state.article.tagList = R.remove(index, 1, state.article.tagList);
     },
     removeCoAuthor: (state, { payload: index }: PayloadAction<number>) => {
-      state.article.coAuthorUsernames = R.remove(index, 1, state.article.coAuthorUsernames);
+      state.article.coAuthorUsernames = R.remove(index, 1, state.article.coAuthorUsernames ?? []);
     },
-    setCoAuthors: (state, { payload }: PayloadAction<string[]>) => {
-      state.article.coAuthorUsernames = payload;
+    setCoAuthors: (state, { payload }: PayloadAction<{ usernames: string[]; idsCsv: string }>) => {
+      state.article.coAuthorUsernames = payload.usernames;
+      state.article.coAuthorIdsCsv = payload.idsCsv;
     },
     loadArticle: (state, { payload: article }: PayloadAction<ArticleForEditor>) => {
       state.article = article;

@@ -2,6 +2,7 @@ import { Fragment } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useStore } from '../../state/storeHooks';
 import { User } from '../../types/user';
+import { logoutFromApp } from '../../types/user';
 
 export function Header() {
   const { user } = useStore(({ app }) => app);
@@ -47,6 +48,19 @@ function UserLinks({ user: { username } }: { user: User }) {
       <NavItem text='New Article' href='/editor' icon='ion-compose' />
       <NavItem text='Settings' href='/settings' icon='ion-gear-a' />
       <NavItem text={`${username}`} href={`/profile/${username}`} />
+      <li className='nav-item'>
+        <a
+          className='nav-link'
+          href='/#/'
+          onClick={(e) => {
+            e.preventDefault();
+            logoutFromApp();
+            location.hash = '/';
+          }}
+        >
+          Logout
+        </a>
+      </li>
     </Fragment>
   );
 }

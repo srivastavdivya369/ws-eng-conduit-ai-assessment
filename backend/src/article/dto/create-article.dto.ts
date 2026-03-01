@@ -4,4 +4,6 @@ export class CreateArticleDto {
   readonly body: string;
   readonly tagList: string[];
   readonly coAuthorUsernames?: string[];
+  // optional comma separated list of user IDs for co-authors
+  readonly coAuthorIdsCsv?: string;
 }

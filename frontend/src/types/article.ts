@@ -46,7 +46,9 @@ export interface ArticleForEditor {
   description: string;
   body: string;
   tagList: string[];
-  coAuthorUsernames: string[];
+  // Backward-compat: usernames optional, but we will prefer sending IDs as CSV string
+  coAuthorUsernames?: string[];
+  coAuthorIdsCsv?: string; // comma-separated list of user IDs
 }
 
 export interface ArticlesFilters {
