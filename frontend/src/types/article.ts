@@ -1,4 +1,4 @@
-import { array, boolean, Decoder, number, object, string } from 'decoders';
+import { array, boolean, Decoder, number, object, string, either, hardcoded } from 'decoders';
 import { Profile, profileDecoder } from './profile';
 
 export interface Article {
@@ -12,6 +12,8 @@ export interface Article {
   favorited: boolean;
   favoritesCount: number;
   author: Profile;
+  coAuthors?: Profile[];
+  canEdit?: boolean;
 }
 
 export const articleDecoder: Decoder<Article> = object({
@@ -25,6 +27,8 @@ export const articleDecoder: Decoder<Article> = object({
   favorited: boolean,
   favoritesCount: number,
   author: profileDecoder,
+  coAuthors: either(array(profileDecoder), hardcoded([])),
+  canEdit: either(boolean, hardcoded(false)),
 });
 
 export interface MultipleArticles {
@@ -42,6 +46,7 @@ export interface ArticleForEditor {
   description: string;
   body: string;
   tagList: string[];
+  coAuthorUsernames: string[];
 }
 
 export interface ArticlesFilters {

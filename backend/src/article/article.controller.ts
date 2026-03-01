@@ -56,6 +56,38 @@ export class ArticleController {
     return this.articleService.update(+user, params.slug, articleData);
   }
 
+  // --- Lock endpoints ---
+  @ApiOperation({ summary: 'Acquire edit lock' })
+  @ApiResponse({ status: 200, description: 'Lock acquired.' })
+  @ApiResponse({ status: 423, description: 'Locked by another user.' })
+  @Post(':slug/lock')
+  async acquireLock(@User('id') userId: number, @Param('slug') slug: string) {
+    return this.articleService.acquireLock(+userId, slug);
+  }
+
+  @ApiOperation({ summary: 'Heartbeat edit lock' })
+  @ApiResponse({ status: 200, description: 'Heartbeat recorded.' })
+  @ApiResponse({ status: 409, description: 'Lock not held or expired.' })
+  @Put(':slug/lock')
+  async heartbeatLock(@User('id') userId: number, @Param('slug') slug: string) {
+    return this.articleService.heartbeatLock(+userId, slug);
+  }
+
+  @ApiOperation({ summary: 'Release edit lock' })
+  @ApiResponse({ status: 200, description: 'Lock released.' })
+  @ApiResponse({ status: 409, description: 'Lock not held.' })
+  @Delete(':slug/lock')
+  async releaseLock(@User('id') userId: number, @Param('slug') slug: string) {
+    return this.articleService.releaseLock(+userId, slug);
+  }
+
+  @ApiOperation({ summary: 'Get edit lock status' })
+  @ApiResponse({ status: 200, description: 'Lock status returned.' })
+  @Get(':slug/lock')
+  async getLockStatus(@Param('slug') slug: string) {
+    return this.articleService.getLockStatus(slug);
+  }
+
   @ApiOperation({ summary: 'Delete article' })
   @ApiResponse({ status: 201, description: 'The article has been successfully deleted.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })

@@ -1,0 +1,65 @@
+.editor-lock-error {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  color: #721c24;
+  font-weight: 500;
+}
+
+.editor-lock-acquired {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 4px;
+  color: #155724;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.editor-coauthors-section {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e1e4e8;
+}
+
+.editor-coauthors-section label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.editor-coauthors-section input {
+  background-color: #f6f8fb;
+  border: 1px solid #d1d5da;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.editor-coauthors-section input:focus {
+  background-color: #fff;
+  border-color: #5cb85c;
+  box-shadow: 0 0 0 3px rgba(92, 184, 92, 0.15);
+}
+
+.editor-coauthors-section input:disabled {
+  background-color: #fafbfc;
+  color: #6a737d;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .editor-lock-acquired,
+  .editor-lock-error {
+    font-size: 14px;
+  }
+
+  .editor-coauthors-section {
+    padding-top: 15px;
+  }
+}

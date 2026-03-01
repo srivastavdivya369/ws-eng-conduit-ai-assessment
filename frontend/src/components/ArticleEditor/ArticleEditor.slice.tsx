@@ -6,14 +6,16 @@ import { GenericErrors } from '../../types/error';
 export interface EditorState {
   article: ArticleForEditor;
   tag: string;
+  coAuthor: string;
   submitting: boolean;
   errors: GenericErrors;
   loading: boolean;
 }
 
 const initialState: EditorState = {
-  article: { title: '', body: '', tagList: [], description: '' },
+  article: { title: '', body: '', tagList: [], description: '', coAuthorUsernames: [] },
   tag: '',
+  coAuthor: '',
   submitting: false,
   errors: {},
   loading: true,
@@ -26,15 +28,23 @@ const slice = createSlice({
     initializeEditor: () => initialState,
     updateField: (
       state,
-      { payload: { name, value } }: PayloadAction<{ name: keyof EditorState['article'] | 'tag'; value: string }>,
+      {
+        payload: { name, value },
+      }: PayloadAction<{
+        name: keyof EditorState['article'] | 'tag' | 'coAuthor';
+        value: string;
+      }>,
     ) => {
       if (name === 'tag') {
         state.tag = value;
         return;
       }
-
-      if (name !== 'tagList') {
-        state.article[name] = value;
+      if (name === 'coAuthor') {
+        state.coAuthor = value;
+        return;
+      }
+      if (name !== 'tagList' && name !== 'coAuthorUsernames') {
+        state.article[name as keyof EditorState['article']] = value as any;
       }
     },
     updateErrors: (state, { payload: errors }: PayloadAction<GenericErrors>) => {
@@ -50,8 +60,20 @@ const slice = createSlice({
         state.tag = '';
       }
     },
+    addCoAuthor: (state) => {
+      if (state.coAuthor.length > 0 && !state.article.coAuthorUsernames.includes(state.coAuthor)) {
+        state.article.coAuthorUsernames.push(state.coAuthor);
+        state.coAuthor = '';
+      }
+    },
     removeTag: (state, { payload: index }: PayloadAction<number>) => {
       state.article.tagList = R.remove(index, 1, state.article.tagList);
+    },
+    removeCoAuthor: (state, { payload: index }: PayloadAction<number>) => {
+      state.article.coAuthorUsernames = R.remove(index, 1, state.article.coAuthorUsernames);
+    },
+    setCoAuthors: (state, { payload }: PayloadAction<string[]>) => {
+      state.article.coAuthorUsernames = payload;
     },
     loadArticle: (state, { payload: article }: PayloadAction<ArticleForEditor>) => {
       state.article = article;
@@ -60,7 +82,17 @@ const slice = createSlice({
   },
 });
 
-export const { initializeEditor, updateField, startSubmitting, addTag, removeTag, updateErrors, loadArticle } =
-  slice.actions;
+export const {
+  initializeEditor,
+  updateField,
+  startSubmitting,
+  addTag,
+  removeTag,
+  addCoAuthor,
+  removeCoAuthor,
+  setCoAuthors,
+  updateErrors,
+  loadArticle,
+} = slice.actions;
 
 export default slice.reducer;

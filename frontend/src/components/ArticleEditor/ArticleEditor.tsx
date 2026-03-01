@@ -4,24 +4,30 @@ import { useStore } from '../../state/storeHooks';
 import { buildGenericFormField } from '../../types/genericFormField';
 import { ContainerPage } from '../ContainerPage/ContainerPage';
 import { GenericForm } from '../GenericForm/GenericForm';
-import { addTag, EditorState, removeTag, updateField } from './ArticleEditor.slice';
+import { addTag, EditorState, removeTag, updateField, setCoAuthors } from './ArticleEditor.slice';
+import { CoAuthorSelector } from './CoAuthorSelector';
 
 export function ArticleEditor({ onSubmit }: { onSubmit: (ev: React.FormEvent) => void }) {
-  const { article, submitting, tag, errors } = useStore(({ editor }) => editor);
-
+  const { article, submitting, tag, coAuthor, errors } = useStore(({ editor }) => editor);
   return (
     <div className='editor-page'>
       <ContainerPage>
         <div className='col-md-10 offset-md-1 col-xs-12'>
+          <CoAuthorSelector
+            selected={article.coAuthorUsernames}
+            disabled={submitting}
+            onChange={(usernames) => store.dispatch(setCoAuthors(usernames))}
+          />
+
           <GenericForm
-            formObject={{ ...article, tag } as unknown as Record<string, string | null>}
+            formObject={{ ...article, tag, coAuthor } as unknown as Record<string, string | null>}
             disabled={submitting}
             errors={errors}
             onChange={onUpdateField}
             onSubmit={onSubmit}
             submitButtonText='Publish Article'
-            onAddItemToList={onAddTag}
-            onRemoveListItem={onRemoveTag}
+            onAddItemToList={onAddItemToList}
+            onRemoveListItem={onRemoveItemFromList}
             fields={[
               buildGenericFormField({ name: 'title', placeholder: 'Article Title' }),
               buildGenericFormField({ name: 'description', placeholder: "What's this article about?", lg: false }),
@@ -51,10 +57,10 @@ function onUpdateField(name: string, value: string) {
   store.dispatch(updateField({ name: name as keyof EditorState['article'], value }));
 }
 
-function onAddTag() {
-  store.dispatch(addTag());
+function onAddItemToList(listName: string) {
+  if (listName === 'tagList') return store.dispatch(addTag());
 }
 
-function onRemoveTag(_: string, index: number) {
-  store.dispatch(removeTag(index));
+function onRemoveItemFromList(listName: string, index: number) {
+  if (listName === 'tagList') return store.dispatch(removeTag(index));
 }

@@ -1,6 +1,6 @@
 import { Err, Ok, Result } from '@hqoss/monads';
 import axios, { AxiosError } from 'axios';
-import { array, object, string } from 'decoders';
+import { array, number, object, string, boolean, nullable } from 'decoders';
 import settings from '../config/settings';
 import {
   Article,
@@ -140,4 +140,58 @@ export async function createComment(slug: string, body: string): Promise<Comment
 
 export async function deleteArticle(slug: string): Promise<void> {
   await axios.delete(`articles/${slug}`);
+}
+
+// --- Users listing for co-author dropdown ---
+export async function searchUsers(q: string, limit = 10, offset = 0): Promise<{ users: Profile[]; usersCount: number }>{
+  const params = new URLSearchParams();
+  if (q) params.set('q', q);
+  params.set('limit', String(limit));
+  params.set('offset', String(offset));
+  const { data } = await axios.get(`users?${params.toString()}`);
+  return object({ users: array(profileDecoder), usersCount: number }).verify(data);
+}
+
+// --- Edit lock endpoints ---
+export async function acquireLock(slug: string): Promise<Result<{ ok: boolean }, GenericErrors>> {
+  try {
+    await axios.post(`articles/${slug}/lock`);
+    return Ok({ ok: true });
+  } catch (error) {
+    const axiosError = error as AxiosError;
+    return Err(object({ errors: genericErrorsDecoder }).verify(axiosError.response?.data).errors);
+  }
+}
+
+export async function heartbeatLock(slug: string): Promise<Result<{ ok: boolean }, GenericErrors>> {
+  try {
+    await axios.put(`articles/${slug}/lock`);
+    return Ok({ ok: true });
+  } catch (error) {
+    const axiosError = error as AxiosError;
+    return Err(object({ errors: genericErrorsDecoder }).verify(axiosError.response?.data).errors);
+  }
+}
+
+export async function releaseLock(slug: string): Promise<Result<{ ok: boolean }, GenericErrors>> {
+  try {
+    await axios.delete(`articles/${slug}/lock`);
+    return Ok({ ok: true });
+  } catch (error) {
+    const axiosError = error as AxiosError;
+    return Err(object({ errors: genericErrorsDecoder }).verify(axiosError.response?.data).errors);
+  }
+}
+
+export async function getLockStatus(
+  slug: string,
+): Promise<{ lock: { isActive: boolean; lockedBy: Profile | null; expiresAt: string | null } }> {
+  const { data } = await axios.get(`articles/${slug}/lock`);
+  return object({
+    lock: object({
+      isActive: boolean,
+      lockedBy: nullable(profileDecoder),
+      expiresAt: nullable(string),
+    }),
+  }).verify(data);
 }

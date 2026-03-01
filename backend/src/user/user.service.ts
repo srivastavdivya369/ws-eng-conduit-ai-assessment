@@ -118,6 +118,11 @@ export class UserService {
   async findAllWithPagination(query: Record<string, string>): Promise<{ users: UserDTO[]; usersCount: number }> {
     const qb = this.userRepository.createQueryBuilder('u');
     
+    if ('q' in query && query.q?.trim()) {
+      const q = `%${query.q.trim()}%`;
+      qb.andWhere('(u.username like ? or u.email like ?)', [q, q]);
+    }
+
     qb.orderBy({ id: 'DESC' });
     const usersCount = await qb.clone().count('id', true).execute('get');
 
