@@ -1,4 +1,4 @@
-# Implementation Plan
+## Implementation Plan
 
 This document will contain the plan for the implementation of the user story, which you should fill BEFORE you start coding. Replace the placeholder/example text below with your actual plan, while retaining the structure.
 
@@ -27,3 +27,4 @@ For example:
 ## Notes
 
 Any additional notes that you think are relevant to the plan. For example, do we need to perform any changes to the AWS architecture to support the new feature? Briefly describe the changes you would need to make.
+
